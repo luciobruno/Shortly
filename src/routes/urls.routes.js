@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteShortUrl, openShortUrl, shortUrls, shorten } from "../controllers/urls.controllers.js";
+import { deleteShortUrl, openShortUrl, shortUrls, shorten, usersMe } from "../controllers/urls.controllers.js";
 import { validateSchema } from "../middlewares/validateSchema.middleware.js";
 import { urlSchema } from "../schemas/urls.schemas.js";
 import { authorizationValidation } from "../middlewares/authorization.middleware.js";
@@ -10,5 +10,6 @@ urlsRouter.post("/urls/shorten", [authorizationValidation, validateSchema(urlSch
 urlsRouter.get("/urls/:id", shortUrls)
 urlsRouter.get("/urls/open/:shortUrl", openShortUrl)
 urlsRouter.delete("/urls/:id", authorizationValidation, deleteShortUrl)
+urlsRouter.get("/users/me", authorizationValidation, usersMe)
 
 export default urlsRouter

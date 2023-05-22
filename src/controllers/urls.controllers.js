@@ -59,13 +59,20 @@ export async function openShortUrl(req, res) {
 
     try {
 
-        const url = await db.query(`SELECT "shortUrls".url FROM "shortUrls" WHERE name=$1;`, [shortUrl])
+        const url = await db.query(`SELECT * FROM "shortUrls" WHERE name=$1;`, [shortUrl])
 
         if (url.rowCount === 0) {
             return res.sendStatus(404)
         }
 
         const result = url.rows[0].url
+        
+        const visits = url.rows[0].visitCount + 1
+
+        console.log(visits)
+
+        await db.query(`UPDATE "shortUrls" SET "visitCount"=$1 WHERE id=$2;`,
+            [visits, url.rows[0].id])
 
         res.redirect(result)
 
@@ -98,6 +105,50 @@ export async function deleteShortUrl(req, res) {
         await db.query(`DELETE FROM "shortUrls" WHERE id=$1`, [id])
 
         res.sendStatus(204)
+
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+}
+
+export async function usersMe(req, res) {
+
+    const { authorization } = req.headers
+    const token = authorization?.replace("Bearer ", "")
+
+    try {
+
+        const session = await db.query(`SELECT * FROM sessions WHERE token=$1;`, [token])
+
+        const user = await db.query(`SELECT * FROM users WHERE id=$1;`, [session.rows[0].userId])
+
+        const urls = await db.query(`SELECT * FROM "shortUrls" WHERE "userId"=$1`, [user.rows[0].id])
+
+        const list = urls.rows.map((elemenet) => {
+
+            const shortUrls = {
+                id: elemenet.id,
+                shortUrl: elemenet.name,
+                url: elemenet.url,
+                visitCount: elemenet.visitCount
+            }
+
+            return shortUrls
+        })
+        let total = 0
+
+        list.map((elemenet) => {
+            total = total + elemenet.visitCount
+        })
+
+        const result = {
+            id: user.rows[0].id,
+            name: user.rows[0].name,
+            visitCount: total,
+            shortenedUrls: list
+        }
+
+        res.status(200).send(result)
 
     } catch (err) {
         res.status(500).send(err.message)
