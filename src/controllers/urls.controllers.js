@@ -158,12 +158,12 @@ export async function usersMe(req, res) {
 export async function ranking(req,res){
     try{
 
-        const shortUrls = await db.query(`SELECT users.id, users.name, 
+        const shortUrls = await db.query(`SELECT users.id AS "id", users.name,
+        COUNT("shortUrls".name) AS "linksCount", 
         SUM("shortUrls"."visitCount") AS "visitCount"
-        COUNT("shortUrls".name) AS "linksCount" 
         FROM users LEFT JOIN "shortUrls" ON users.id="shortUrls"."userId"
         GROUP BY users.id
-        ORDE BY "visitCount" DESC
+        ORDER BY "visitCount" DESC
         LIMIT 10;`)
 
         res.status(200).send(shortUrls.rows)
