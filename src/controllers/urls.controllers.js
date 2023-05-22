@@ -154,3 +154,15 @@ export async function usersMe(req, res) {
         res.status(500).send(err.message)
     }
 }
+
+export async function ranking(req,res){
+    try{
+
+        const shortUrls = await db.query(`SELECT * FROM "shortUrls";`)
+
+        res.status(200).send(shortUrls.rows)
+
+    }catch(err){
+        res.status(500).send(err.message)
+    }
+}
